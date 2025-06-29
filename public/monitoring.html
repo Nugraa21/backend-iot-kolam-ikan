@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Monitoring Kolam Ikan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyASB15Aegg57nnhZTZR9Pu6TKlKZRmaCtQ",
+      authDomain: "iotkolam-c5bf2.firebaseapp.com",
+      projectId: "iotkolam-c5bf2",
+      storageBucket: "iotkolam-c5bf2.appspot.com",
+      messagingSenderId: "845647627682",
+      appId: "1:845647627682:web:8506fb4d2f9ffa5f7edefb",
+      measurementId: "G-V6S8VK7W2X"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const dataContainer = document.getElementById("data-body");
+    const statusMqtt = document.getElementById("mqtt-status");
+    const statusDb = document.getElementById("db-status");
+
+    try {
+      onSnapshot(collection(db, "data_kolam"), snapshot => {
+        dataContainer.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          dataContainer.innerHTML += `
+            <tr class="hover:bg-orange-100 transition duration-300">
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">${data.kolam}</td>
+              <td class="px-4 py-2 text-center">${data.suhu}</td>
+              <td class="px-4 py-2 text-center">${data.do}</td>
+              <td class="px-4 py-2 text-center">${data.ph}</td>
+              <td class="px-4 py-2 text-center">${data.berat_pakan}</td>
+              <td class="px-4 py-2 text-center">${data.level_air}</td>
+              <td class="px-4 py-2 text-center">${new Date(data.timestamp.seconds * 1000).toLocaleString()}</td>
+            </tr>`;
+        });
+        statusDb.innerHTML = "<span class='text-green-600 font-bold'>🟢 Connected</span>";
+      });
+    } catch (e) {
+      console.error(e);
+      statusDb.innerHTML = "<span class='text-red-600 font-bold'>🔴 Disconnected</span>";
+    }
+
+    // Simulasi status MQTT (bisa diganti real status jika ada endpoint)
+    setInterval(() => {
+      fetch("https://api.github.com")
+        .then(() => statusMqtt.innerHTML = "<span class='text-green-600 font-bold'>🟢 Connected</span>")
+        .catch(() => statusMqtt.innerHTML = "<span class='text-red-600 font-bold'>🔴 Disconnected</span>");
+    }, 3000);
+  </script>
+</head>
+<body class="bg-gradient-to-br from-white to-orange-100 min-h-screen font-sans">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-orange-600 drop-shadow-sm">Monitoring Kolam Ikan</h1>
+      <p class="text-gray-600">Realtime Dashboard menggunakan Firebase dan MQTT</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white border-l-8 border-green-500 p-4 rounded-lg shadow">
+        <p class="text-gray-500">Status Database</p>
+        <p id="db-status" class="text-xl font-bold mt-1">⏳ Checking...</p>
+      </div>
+      <div class="bg-white border-l-8 border-blue-500 p-4 rounded-lg shadow">
+        <p class="text-gray-500">Status MQTT</p>
+        <p id="mqtt-status" class="text-xl font-bold mt-1">⏳ Checking...</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-x-auto">
+      <table class="w-full text-sm text-gray-700">
+        <thead class="bg-orange-600 text-white">
+          <tr>
+            <th class="px-4 py-2">Kolam</th>
+            <th class="px-4 py-2">Suhu (°C)</th>
+            <th class="px-4 py-2">DO (mg/L)</th>
+            <th class="px-4 py-2">pH</th>
+            <th class="px-4 py-2">Pakan (kg)</th>
+            <th class="px-4 py-2">Air (%)</th>
+            <th class="px-4 py-2">Waktu</th>
+          </tr>
+        </thead>
+        <tbody id="data-body" class="bg-white divide-y divide-orange-200"></tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
