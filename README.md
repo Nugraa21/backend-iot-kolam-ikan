@@ -13,6 +13,6 @@ Dashboard ini merupakan antarmuka web realtime yang digunakan untuk memantau kon
 - Firebase Firestore
 - HTML + TailwindCSS
 - JavaScript (module)
-- Node.js backend (untuk publish data)
+- Node.js backend (untuk publish data) 
 
                  
